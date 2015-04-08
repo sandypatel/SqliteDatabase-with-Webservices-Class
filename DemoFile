@@ -1,0 +1,63 @@
+#import "ParentalViewController.h"
+#define IS_IPHONE_5 ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
+@interface AccountVerifyViewController ()
+
+@end
+
+@implementation AccountVerifyViewController
+@synthesize intCheckLogin,success,intTestONOFF;
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+// Do not copy upper details on your code
+
+#pragma mark - callUserFriendList Webservice
+-(void)callUserFriendListWebservice{
+    self.view.userInteractionEnabled=false;
+    //[SVProgressHUD showWithStatus:@"Loading
+    NSString *strUrl=@"http://stroller.alakmalak.net/webservice/pm/signup_service.php";
+    ASIFormDataRequest *request = [ASIFormDataRequest requestWithURL:[NSURL URLWithString:strUrl]];
+    [request setPostValue:[[arrUserId objectAtIndex:0] valueForKey:@"user_id"] forKey:@"user_id"];
+    [request setPostValue:[[arrUserId objectAtIndex:0]valueForKey:@"id"] forKey:@"id"];
+    [request setDelegate:self];
+    [request setDidFinishSelector:@selector(requestFinishedsforUserFrendList:)];
+    [request setDidFailSelector:@selector(requestWebserviceFailedforUserFrendList:)];
+    [request startAsynchronous];
+}
+- (void)requestFinishedsforUserFrendList:(ASIHTTPRequest*)request {
+    self.view.userInteractionEnabled=true;
+    NSString *Result = [request responseString];
+    NSLog(@"%@",Result);
+    NSError *error;
+    SBJSON *json = [SBJSON new];
+    arrFriend = [json objectWithString:Result error:&error];
+    NSLog(@"%@",arrFriend);
+    if (![arrFriend count]>0) {
+        [self hideViews];
+    }else{
+        Cell.btnFriendDelete.hidden=NO;
+        Cell.lblUserName.hidden=NO;
+        Cell.lblTotalNoMsg.hidden=NO;
+        if (checkComposeReply==333) {
+            tblForwordFrendName.dataSource = self;
+            tblForwordFrendName.delegate = self;
+            [tblForwordFrendName reloadData];
+        }else{
+             [tblFriend reloadData];
+        }
+    }
+}
+-(void)requestWebserviceFailedforUserFrendList:(ASIHTTPRequest *)request
+{
+    NSLog(@"Fail");
+    [SVProgressHUD dismissWithError:@"Connection failed"];
+    self.navigationController.navigationBar.userInteractionEnabled=true;
+    [self.view setUserInteractionEnabled:YES];
+    UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"Friend List" message:@"Connection fail.Please turn on internet connection" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Reload", nil];
+    [alert show];
+}
