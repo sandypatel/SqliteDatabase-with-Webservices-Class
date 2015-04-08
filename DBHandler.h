@@ -1,3 +1,8 @@
+// This is use only ARC release proble 
+
+//       -fno-objc-arc
+
+
 #import <Foundation/Foundation.h>
 #import <sqlite3.h>
 @interface DBHandler : NSObject
